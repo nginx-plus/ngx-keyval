@@ -4,7 +4,7 @@ node_js:
   - "13"
 
 # Use container-based Travis infrastructure.
-sudo: false
+sudo: required
 
 addons:
   hosts:
