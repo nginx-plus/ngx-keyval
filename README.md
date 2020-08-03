@@ -63,3 +63,7 @@ forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
 ```
 
 Update the Nginx server configuration with the correct IP and port of the Node.js server.
+
+---
+
+Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance and a minimal hit on the server.
