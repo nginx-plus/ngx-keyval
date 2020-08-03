@@ -1,0 +1,33 @@
+{
+    "name": "@style.tools/ngx-keyval",
+    "version": "1.0.0",
+    "description": "Nginx proxy_cache based key/value store with TTL.",
+    "author": {
+        "name": "info@style.tools",
+        "email": "info@style.tools",
+        "web": "style.tools"
+    },
+    "server": {
+        "port": 14451,
+        "verbose": true,
+        "default_ttl": false,
+        "miss_ttl": 1,
+        "default_content_type": "plain/text"
+    },
+    "engines": {
+        "node": "~13"
+    },
+    "dependencies": {
+        "express": "^4.17.1",
+        "memory-cache": "^0.2.0",
+        "request": "^2.88.2"
+    },
+    "devDependencies": {
+        "micro-benchmark": "^1.3.22",
+        "mocha": "^3.0.2"
+    },
+    "scripts": {
+        "test": "./node_modules/.bin/mocha test/specs/tests.js",
+        "start": "node ./server.js"
+    }
+}
