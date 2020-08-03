@@ -34,8 +34,8 @@ install:
   - sudo ln -s /etc/nginx/sites-available/server.conf /etc/nginx/sites-enabled/server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
   - sudo nginx -t
-  - sudo service nginx start || true
-  - sudo systemctl --full status nginx.service || true
+  #- sudo service nginx start || true
+  #- sudo systemctl --full status nginx.service || true
 
 before_script:
   - npm install
