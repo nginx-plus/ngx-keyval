@@ -60,7 +60,7 @@ The file [server.js](https://github.com/style-tools/ngx-keyval/blob/master/serve
 
 ```bash
 forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
-```
+``` 
 
 Update the Nginx server configuration with the correct IP and port of the Node.js server.
 
