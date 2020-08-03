@@ -50,13 +50,13 @@ npm install @style.tools/ngx-keyval --save
 
 ## Step 1: setup the Nginx key/value store server
 
-The server configuration in server.conf provides an example. You may need to tune the settings of the proxy_cache, the server name and the security settings (IP restriction). 
+The server configuration in [server.conf](https://github.com/style-tools/ngx-keyval/blob/master/server.conf) provides an example. You may need to tune the settings of the proxy_cache, the server name and the security settings (IP restriction). 
 
 ## Step 2: setup the Node.js key/value store management server
 
 The key/value store uses a Node.js server as a cache management controller that is used by Nginx as an upstream. 
 
-The file server.js contains a default server that can be configured via the settings in package.json#server. You can start the server using forever.
+The file [server.js](https://github.com/style-tools/ngx-keyval/blob/master/server.js) contains a default server that can be configured via the settings in package.json#server. You can start the server using forever.
 
 ```bash
 forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
