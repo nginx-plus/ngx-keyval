@@ -25,7 +25,7 @@ describe('Nginx key/val client tests', async function() {
 
         // load key/val store
         NKV = new NgxKeyVal({
-            "server": "http://kv.style.tools/"
+            "server": "http://localhost/"
         });
 
         assert.equal(typeof NKV, 'object');
