@@ -4,6 +4,21 @@
 
 A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an extra in-memory cache layer with an independent TTL.
 
+The Nginx key/value store can be used via Curl or a simple HTTP request. The Nginx key/value store can be used in a browser using simple Fetch API requests.
+
+```bash
+# get data
+curl -D - http://your-keyvalue-store.local/key
+
+# set data with a 1 hour TTL
+curl -D - -H "Content-Type: application/json" -X POST -d '{"value": "data", "ttl": 3600}' http://your-keyvalue-store.local/key
+
+# delete key
+curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
+```
+
+The Node.js client provides an easy API.
+
 ```javascript
 const ngxKeyVal = require('@style.tools/ngx-keyval');
 
@@ -48,22 +63,3 @@ forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
 ```
 
 Update the Nginx server configuration with the correct IP and port of the Node.js server.
-
-## Step 3: test the key/value store
-
-The Nginx key/value store can be used via Curl or a simple HTTP request. The Nginx key/value store can be used in a browser using simple Fetch API requests.
-
-```bash
-# get data
-curl -D - http://your-keyvalue-store.local/key
-
-# set data with a 1 hour TTL
-curl -D - -H "Content-Type: application/json" -X POST -d '{"value": "data", "ttl": 3600}' http://your-keyvalue-store.local/key
-
-# delete key
-curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
-```
-
-The Node.js client provides an easy API.
-
-Nginx TTL management is efficient and it can handle gigabytes of data efficiently. The ngx-keyval store supports a custom content-type so that data can be returned with an applicable `Content-Type` header.
