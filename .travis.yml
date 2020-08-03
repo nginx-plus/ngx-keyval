@@ -18,14 +18,17 @@ install:
   - sudo add-apt-repository -y ppa:nginx/stable
   - sudo apt-get update
   - sudo apt-get install -y --force-yes nginx-extras
+  - sudo ls -l /etc/nginx/sites-available/
   - sudo rm /etc/nginx/sites-available/default
-  - sudo cp server.conf /etc/nginx/sites-available/keyval-server.conf
-  - sudo sh -c "sed 's/\/path\/to\/your\/keyvalue-store\/data\//\/tmp\/keyval\//g' /etc/nginx/sites-available/keyval-server.conf > /etc/nginx/sites-available/keyval-server.conf"
-  - sudo sh -c "sed 's/deny all;//g' /etc/nginx/sites-available/keyval-server.conf > /etc/nginx/sites-available/keyval-server.conf"
-  - sudo sh -c "sed 's/listen 80;/listen 127.0.0.1:8080 default_server;/g' /etc/nginx/sites-available/keyval-server.conf > /etc/nginx/sites-available/keyval-server.conf"
-  - sudo sh -c "sed 's/server_name your-keyvalue-store.local;//g' /etc/nginx/sites-available/keyval-server.conf > /etc/nginx/sites-available/keyval-server.conf"
-  - sudo cat /etc/nginx/sites-available/keyval-server.conf
-  - sudo ln -s /etc/nginx/sites-available/keyval-server.conf /etc/nginx/sites-enabled/keyval-server.conf
+  - sudo cp server.conf /etc/nginx/sites-available/
+  - sudo ls -l /etc/nginx/sites-available/
+  - sudo sh -c "sed 's/\/path\/to\/your\/keyvalue-store\/data\//\/tmp\/keyval\//g' /etc/nginx/sites-available/server.conf > /etc/nginx/sites-available/server.conf"
+  - sudo sh -c "sed 's/deny all;//g' /etc/nginx/sites-available/server.conf > /etc/nginx/sites-available/server.conf"
+  - sudo sh -c "sed 's/listen 80;/listen 127.0.0.1:8080 default_server;/g' /etc/nginx/sites-available/server.conf > /etc/nginx/sites-available/server.conf"
+  - sudo sh -c "sed 's/server_name your-keyvalue-store.local;//g' /etc/nginx/sites-available/server.conf > /etc/nginx/sites-available/server.conf"
+  - sudo ls -l /etc/nginx/sites-available/
+  - sudo cat /etc/nginx/sites-available/server.conf
+  - sudo ln -s /etc/nginx/sites-available/server.conf /etc/nginx/sites-enabled/server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
   - sudo service nginx start
   - sudo service nginx restart
