@@ -48,11 +48,11 @@ await NKV.del('key');
 npm install @style.tools/ngx-keyval --save
 ```
 
-## Step 1: setup the Nginx key/value server
+## Step 1: setup the Nginx key/value store server
 
 The server configuration in server.conf provides an example. You may need to tune the settings of the proxy_cache, the server name and the security settings (IP restriction). 
 
-## Step 2: setup the Node.js key/value management server
+## Step 2: setup the Node.js key/value store management server
 
 The key/value store uses a Node.js server as a cache management controller that is used by Nginx as an upstream. 
 
