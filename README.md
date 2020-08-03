@@ -24,7 +24,7 @@ const ngxKeyVal = require('@style.tools/ngx-keyval');
 
 // initiate key/value store
 const NKV = new ngxKeyVal({
-    "server": "http://your-keyval-store.local/"
+    "server": "http://your-keyvalue-store.local/"
 });
 
 // get data
