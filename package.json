@@ -24,7 +24,8 @@
     },
     "devDependencies": {
         "micro-benchmark": "^1.3.22",
-        "mocha": "^3.0.2"
+        "mocha": "^3.0.2",
+        "md5": "latest"
     },
     "scripts": {
         "test": "./node_modules/.bin/mocha test/specs/tests.js",
