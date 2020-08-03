@@ -2,13 +2,12 @@
 
 # ngx-keyval - Nginx key/value store
 
-A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an extra in-memory cache layer.
+A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an extra in-memory cache layer with an independent TTL.
 
 ```javascript
-// Nginx key/val controller
 const ngxKeyVal = require('@style.tools/ngx-keyval');
 
-// load key/val store
+// initiate key/value store
 const NKV = new ngxKeyVal({
     "server": "http://keyval-store.style.tools/"
 });
@@ -40,9 +39,9 @@ The server configuration in server.conf provides an example. You may need to tun
 
 ## Step 2: setup the Node.js key/value management server
 
-The key/value store uses a Node.js server as a cache management controller that is used by Nginx as an upstream.
+The key/value store uses a Node.js server as a cache management controller that is used by Nginx as an upstream. 
 
-The file server.js contains a default server that can be configured via settings in package.json#server. You can start the server using forever.
+The file server.js contains a default server that can be configured via the settings in package.json#server. You can start the server using forever.
 
 ```bash
 forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
@@ -65,4 +64,6 @@ curl -D - -H "Content-Type: application/json" -X POST -d '{"value": "data", "ttl
 curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
 ```
 
-The Node.js client provides an easy API that ads an in-memory cache layer with an independent TTL.
+The Node.js client provides an easy API.
+
+Nginx TTL management is efficient and it can handle gigabytes of data efficiently. The ngx-keyval store supports a custom content-type so that data can be returned with an applicable `Content-Type` header.
