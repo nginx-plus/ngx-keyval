@@ -4,7 +4,7 @@
 
 A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an extra in-memory cache layer with an independent TTL.
 
-The Nginx key/value store can be used via Curl or a simple HTTP request. The Nginx key/value store can be used in a browser using simple Fetch API requests.
+The Nginx key/value store can be used via Curl or a simple HTTP request. The Nginx key/value store can be used in a browser using Fetch API requests.
 
 ```bash
 # get data
