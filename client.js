@@ -86,7 +86,7 @@ class NgxKeyVal {
             request(requestOptions, function(err, response, body) {
 
                 if (err) {
-                    throw new InternalServerError(error);
+                    throw new InternalServerError(err);
                 } else if (response.statusCode === 400) {
                     throw new BadRequest(body);
                 } else if (response.statusCode === 403) {
@@ -180,7 +180,7 @@ class NgxKeyVal {
             request(requestOptions, function(err, response, body) {
 
                 if (err) {
-                    throw new InternalServerError(error);
+                    throw new InternalServerError(err);
                 } else if (response.statusCode === 400) {
                     throw new BadRequest(body);
                 } else if (response.statusCode === 403) {
@@ -230,7 +230,7 @@ class NgxKeyVal {
             request(requestOptions, function(err, response, body) {
 
                 if (err) {
-                    throw new InternalServerError(error);
+                    throw new InternalServerError(err);
                 } else if (response.statusCode === 400) {
                     throw new BadRequest(body);
                 } else if (response.statusCode === 403) {

@@ -23,6 +23,6 @@ before_script:
   - npm install
 
 script:
-  - test/install-nginx.sh
+  - sudo test/install-nginx.sh
   - node server.js &
   - npm test
