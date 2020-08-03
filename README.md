@@ -66,4 +66,4 @@ Update the Nginx server configuration with the correct IP and port of the Node.j
 
 ---
 
-Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance and a minimal hit on the server.
+Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance.
