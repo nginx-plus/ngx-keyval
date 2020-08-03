@@ -56,7 +56,7 @@ The server configuration in [server.conf](https://github.com/style-tools/ngx-key
 
 The key/value store uses a Node.js server as a cache management controller that is used by Nginx as an upstream. 
 
-The file [server.js](https://github.com/style-tools/ngx-keyval/blob/master/server.js) contains a default server that can be configured via the settings in package.json#server. You can start the server using forever.
+The file [server.js](https://github.com/style-tools/ngx-keyval/blob/master/server.js) contains a default server that can be configured via the settings in [package.json#server](https://github.com/style-tools/ngx-keyval/blob/master/package.json). You can start the server using forever.
 
 ```bash
 forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
