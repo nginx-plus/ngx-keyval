@@ -24,6 +24,7 @@ install:
   - sudo ln -s /etc/nginx/sites-available/keyval-server.conf /etc/nginx/sites-enabled/keyval-server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
   - sudo service nginx start
+  - sudo service nginx restart
 
 before_script:
   - npm install
