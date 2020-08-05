@@ -32,16 +32,15 @@ install:
   - sudo ln -s /etc/nginx/sites-availalbe/server.conf /etc/nginx/sites-enabled/server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
   - sudo nginx -t
-  - sudo service apache stop || true
-  - sudo service nginx start || true
-  - sudo systemctl --full status nginx.service || true
-  - sudo netstat -tulpn || true
-  - sudo ping http://127.0.0.1/ || true
-  - curl -D - http://127.0.0.1/xxx
+  #- sudo service nginx start || true
+  #- sudo systemctl --full status nginx.service || true
 
 before_script:
   - npm install
 
 script:
+    - sudo netstat -tulpn || true
+  - sudo ping http://127.0.0.1/ || true
+  - curl -D - http://127.0.0.1/xxx
   - node server.js &
   - npm test
