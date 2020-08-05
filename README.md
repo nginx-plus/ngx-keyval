@@ -136,6 +136,13 @@ forever start --uid "ngx-keyval" -a /home/path/to/server.js
 
 Update the Nginx server configuration with the correct IP and port of the Node.js server.
 
+```nginx
+# key/val management server
+upstream ngx-keyval-server {
+  server  127.0.0.1:14451;
+}
+```
+
 ---
 
 # Persistent storage via Google Cloud Storage
