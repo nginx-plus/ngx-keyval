@@ -35,7 +35,8 @@ install:
   - sudo service apache stop || true
   - sudo service nginx start || true
   - sudo systemctl --full status nginx.service || true
-  - netstat -tulpn | grep 80
+  - sudo netstat -tulpn | grep 80 || true
+  - sudo ping http://your-keyvalue-store.local/ || true
   - curl -D - http://your-keyvalue-store.local/xxx
 
 before_script:
