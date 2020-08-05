@@ -27,7 +27,7 @@ install:
   - sudo sed -i 's/deny all;//g' /etc/nginx/sites-available/server.conf
  # - sudo sed -i 's/proxy_cache_bypass $st_keyval_update;/proxy_cache_bypass $st_keyval_update;proxy_cache_bypass $http_pragma;/g' /etc/nginx/sites-available/server.conf
   - sudo sed -i 's/listen 80;/listen 127.0.0.1:80 default_server;/g' /etc/nginx/sites-available/server.conf
-#  - sudo sed -i 's/server_name your-keyvalue-store.local;/ /g' /etc/nginx/sites-available/server.conf
+  - sudo sed -i 's/server_name your-keyvalue-store.local;/ /g' /etc/nginx/sites-available/server.conf
   - sudo cat /etc/nginx/sites-available/server.conf
   - sudo ln -s /etc/nginx/sites-availalbe/server.conf /etc/nginx/sites-enabled/server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
@@ -35,9 +35,9 @@ install:
   - sudo service apache stop || true
   - sudo service nginx start || true
   - sudo systemctl --full status nginx.service || true
-  - sudo netstat -tulpn | grep 80 || true
-  - sudo ping http://your-keyvalue-store.local/ || true
-  - curl -D - http://your-keyvalue-store.local/xxx
+  - sudo netstat -tulpn || true
+  - sudo ping http://127.0.0.1/ || true
+  - curl -D - http://127.0.0.1/xxx
 
 before_script:
   - npm install
