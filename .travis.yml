@@ -39,7 +39,7 @@ before_script:
   - npm install
 
 script:
-    - sudo netstat -tulpn || true
+  - sudo netstat -tulpn || true
   - sudo ping http://127.0.0.1/ || true
   - curl -D - http://127.0.0.1/xxx
   - node server.js &
