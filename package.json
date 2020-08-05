@@ -1,32 +1,14 @@
 {
     "name": "@style.tools/ngx-keyval",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Nginx proxy_cache based key/value store with TTL.",
     "author": {
         "name": "info@style.tools",
         "email": "info@style.tools",
         "web": "style.tools"
     },
-    "main": "client.js",
-    "server": {
-        "port": 14451,
-        "verbose": true,
-        "default_ttl": false,
-        "miss_ttl": 1,
-        "default_content_type": "plain/text",
-        "persist": {
-            "type": "@google-cloud/storage",
-            "auth": {
-                "projectId": "optimization",
-                "keyFilename": "service-account-key.json"
-            },
-            "bucket": "ngx-keyval-test",
-            "upload_options": {
-                "gzip": true
-            },
-            "enabled": "header"
-        }
-    },
+    "keywords": ["key-value", "keyval", "nginx", "google-cloud-storage"],
+    "main": "index.js",
     "engines": {
         "node": "~13"
     },
@@ -42,7 +24,6 @@
         "md5": "latest"
     },
     "scripts": {
-        "test": "./node_modules/.bin/mocha test/specs/tests.js",
-        "start": "node ./server.js"
+        "test": "./node_modules/.bin/mocha test/specs/tests.js"
     }
 }

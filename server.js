@@ -4,12 +4,12 @@
 
 // ngx-keyval server class
 class ngxKeyValServer {
-    constructor() {
+    constructor(config) {
 
         const pack = require('./package.json');
 
         // set config
-        this.config = pack.server;
+        this.config = config;
         this.version = pack.version;
     }
 
@@ -447,6 +447,8 @@ class ngxKeyValServer {
     }
 }
 
+module.exports = ngxKeyValServer;
+
 // error handlers
 class APIError extends Error {};
 
@@ -457,9 +459,3 @@ class PersistServerError extends ServerError {};
 
 // HTTP Status 500, 504
 class InternalServerError extends APIError {};
-
-// initiate server controller
-const server = new ngxKeyValServer();
-
-// start server
-server.start();

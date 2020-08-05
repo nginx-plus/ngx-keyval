@@ -4,7 +4,7 @@ const assert = require('assert'),
     path = require('path'),
     fs = require('fs'),
     md5 = require('md5'),
-    ngxKeyVal = require(path.resolve(__dirname, '../../client.js')),
+    ngxKeyVal = require(path.resolve(__dirname, '../../index.js')),
     microBenchmark = require('micro-benchmark');
 
 let store;
@@ -27,7 +27,7 @@ describe('Nginx key/val client tests', async function() {
     it('Initiates key/value client', function(done) {
 
         // load key/val store
-        store = new ngxKeyVal({
+        store = new ngxKeyVal.client({
             "server": "http://your-keyvalue-store.local/"
         });
 

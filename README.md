@@ -20,10 +20,10 @@ curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
 The Node.js client provides an easy API.
 
 ```javascript
-const ngxKeyValClient = require('@style.tools/ngx-keyval');
+const ngxKeyVal = require('@style.tools/ngx-keyval');
 
 // initiate key/value store
-const store = new ngxKeyValClient({
+const store = new ngxKeyVal.client({
     "server": "http://your-keyvalue-store.local/"
 });
 
@@ -100,10 +100,38 @@ The server configuration in [server.conf](https://github.com/style-tools/ngx-key
 
 The key/value store uses a Node.js server as a management controller that is used by Nginx as an upstream. 
 
-The file [server.js](https://github.com/style-tools/ngx-keyval/blob/master/server.js) contains a default server that can be configured via the settings in [package.json#server](https://github.com/style-tools/ngx-keyval/blob/master/package.json). You can start the server using forever.
+```javascript
+const ngxKeyVal = require('@style.tools/ngx-keyval');
+
+// initiate key/value server
+const server = new ngxKeyVal.server({
+    "port": 14451,
+    "verbose": true,
+    "default_ttl": false,
+    "miss_ttl": 1,
+    "default_content_type": "plain/text",
+    "persist": {
+        "type": "@google-cloud/storage",
+        "auth": {
+            "projectId": "optimization",
+            "keyFilename": "service-account-key.json"
+        },
+        "bucket": "ngx-keyval-test",
+        "upload_options": {
+            "gzip": true
+        },
+        "enabled": "header"
+    }
+});
+
+// start server
+server.start();
+```
+
+You can start the server using forever.
 
 ```bash
-forever start --uid "ngx-keyval" -a /home/path/to/ngx-keyval/server.js
+forever start --uid "ngx-keyval" -a /home/path/to/server.js
 ``` 
 
 Update the Nginx server configuration with the correct IP and port of the Node.js server.
@@ -114,28 +142,13 @@ Update the Nginx server configuration with the correct IP and port of the Node.j
 
 Nginx `proxy_cache` has a hard cache size limit and automatically removes least accessed entries when the cache limit is reached. To secure data persistency, the solution provides the option to use a [Google Cloud Storage](https://cloud.google.com/storage) bucket as a fallback.
 
-To use the Google Cloud Storage bucket you need to configure `persist` in [package.json#server](https://github.com/style-tools/ngx-keyval/blob/master/package.json).
-
-```json
-{
-   "type": "@google-cloud/storage",
-   "auth": {
-       "projectId": "optimization",
-       "keyFilename": "service-account-key.json"
-   },
-   "bucket": "ngx-keyval-test",
-   "upload_options": {
-       "gzip": true
-   },
-   "enabled": "header"
-}
-```
+To use the Google Cloud Storage bucket you need to configure `persist` parameter in the Node.js server configuration (see above).
 
 ## Retrieving/storing persistent data
 
 The Google Cloud Storage bucket can be enabled by default or based on a HTTP header.
 
-The value `persist#enabled` in [package.json#server](https://github.com/style-tools/ngx-keyval/blob/master/package.json) accepts three values:
+The parameter `persist#enabled` accepts three values:
 
 - false
 - always

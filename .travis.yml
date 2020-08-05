@@ -37,5 +37,5 @@ before_script:
   - npm install
 
 script:
-  - node server.js &
+  - node test/server.js &
   - npm test
