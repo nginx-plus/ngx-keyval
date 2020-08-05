@@ -146,15 +146,15 @@ The value `persist#enabled` in [package.json#server](https://github.com/style-to
 - always
 - header
 
-. When set to `header`, it is required to set the `x-persist:1` header in the GET or POST request to enable the Google Cloud Storage bucket for non-existent keys. It is possible to define the bucket using a JSON value: `x-persist:{"bucket": "bucket-name"}`.
+When set to `header`, it is required to set the `x-persist:1` header in the GET or POST request to enable the Google Cloud Storage bucket. It is possible to define the bucket using a JSON value: `x-persist:{"bucket": "bucket-name"}`.
 
-# Details
+# Description
 
 The solution (Nginx key/value server + Node.js client) provides three cache layers for optimal performance and reliability.
 
 - in-memory cache ([memory-cache](https://github.com/ptarjan/node-cache)) with an independent TTL
 - Nginx key/value server
-- Google Cloud Storage (secure data persistency)
+- Google Cloud Storage (persistency)
 
 Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance.
 
