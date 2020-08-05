@@ -32,8 +32,10 @@ install:
   - sudo ln -s /etc/nginx/sites-availalbe/server.conf /etc/nginx/sites-enabled/server.conf
   - sudo nginx -c /etc/nginx/nginx.conf
   - sudo nginx -t
+  - sudo service apache stop || true
   - sudo service nginx start || true
   - sudo systemctl --full status nginx.service || true
+  - netstat -tulpn | grep 80
   - curl -D - http://your-keyvalue-store.local/xxx
 
 before_script:
