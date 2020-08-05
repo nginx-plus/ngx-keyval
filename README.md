@@ -36,9 +36,7 @@ await store.put('key', 'data', 60 * 60);
 // delete key
 await store.del('key');
 
-/**
- * options example
- */
+/** options example **/
 
 // get data with custom miss-ttl and HTTP headers
 let data = await store.get('key', {
