@@ -72,6 +72,23 @@ let data = await store.get('key', null, function(data) {
    // do not use cached result
    // return false;
 });
+
+
+/**
+ * Google Cloud Storage peristence examples
+ */
+
+// set data with persistent storage in Google Cloud Storage
+await store.put('key', 'data', 60 * 60, false, true);
+
+// set data with persistent storage in a custom Google Cloud Storage bucket
+await store.put('key', 'data', 60 * 60, false, 'bucket-name');
+
+// get data with persistent storage fallback
+let data = await store.get('key', null, false, true);
+
+// delete data from persistent storage
+await store.del('key', null, false, true);
 ```
 
 # Installation
@@ -106,14 +123,16 @@ To use the Google Cloud Storage bucket you need to configure `persist` in [packa
 
 ```json
 {
-   "persist": {
-      "type": "@google-cloud/storage",
-      "auth": {
-          "key": "key.json"
-      },
-      "bucket": "bucket-name",
-      "enabled": "header"
-  }
+   "type": "@google-cloud/storage",
+   "auth": {
+       "projectId": "optimization",
+       "keyFilename": "service-account-key.json"
+   },
+   "bucket": "ngx-keyval-test",
+   "upload_options": {
+       "gzip": true
+   },
+   "enabled": "header"
 }
 ```
 

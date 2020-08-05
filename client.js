@@ -50,6 +50,11 @@ class ngxKeyValClient {
     // add persist header
     persist_header(headers, persist) {
         if (persist) {
+            if (typeof persist === 'string') {
+                persist = {
+                    "bucket": persist
+                };
+            }
             if (typeof persist === 'object') {
                 persist = JSON.stringify(persist);
             } else {
