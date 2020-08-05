@@ -1,43 +1,33 @@
 language: node_js
-
 node_js:
-  - "13"
-
-# Use container-based Travis infrastructure.
+- '13'
 sudo: required
-
 addons:
   hosts:
-    - your-keyvalue-store.local
-
+  - your-keyvalue-store.local
 branches:
   only:
-    - master
-
+  - master
 before_install:
-  - openssl aes-256-cbc -K $encrypted_cd927ea5e858_key -iv $encrypted_cd927ea5e858_iv -in service-account-key.json.enc -out service-account-key.json -d
-
+- openssl aes-256-cbc -K $encrypted_cd927ea5e858_key -iv $encrypted_cd927ea5e858_iv
+  -in service-account-key.json.enc -out service-account-key.json -d
 install:
-  - sudo add-apt-repository -y ppa:nginx/stable
-  - sudo apt-get update
-  - sudo apt-get install -y --force-yes nginx-extras
-  - sudo rm /etc/nginx/sites-available/default
-  - sudo cp server.conf /etc/nginx/sites-available/
-  - sudo sed -i 's/\/path\/to\/your\/keyvalue-store\/data\//\/etc\/nginx\/kv\//g' /etc/nginx/sites-available/server.conf
-  - sudo sed -i 's/deny all;//g' /etc/nginx/sites-available/server.conf
-  - sudo sed -i 's/proxy_cache_bypass $st_keyval_update;/proxy_cache_bypass $st_keyval_update;proxy_cache_bypass $http_pragma;/g' /etc/nginx/sites-available/server.conf
-  - sudo sed -i 's/listen 80;/listen 127.0.0.1:80 default_server;/g' /etc/nginx/sites-available/server.conf
-#  - sudo sed -i 's/server_name your-keyvalue-store.local;/ /g' /etc/nginx/sites-available/server.conf
-  - sudo cat /etc/nginx/sites-available/server.conf
-  - sudo ln -s /etc/nginx/sites-availalbe/server.conf /etc/nginx/sites-enabled/server.conf
-  - sudo nginx -c /etc/nginx/nginx.conf
-  - sudo nginx -t
-  #- sudo service nginx start || true
-  #- sudo systemctl --full status nginx.service || true
-
+- sudo add-apt-repository -y ppa:nginx/stable
+- sudo apt-get update
+- sudo apt-get install -y --force-yes nginx-extras
+- sudo rm /etc/nginx/sites-available/default
+- sudo cp server.conf /etc/nginx/sites-available/
+- sudo sed -i 's/\/path\/to\/your\/keyvalue-store\/data\//\/etc\/nginx\/kv\//g' /etc/nginx/sites-available/server.conf
+- sudo sed -i 's/deny all;//g' /etc/nginx/sites-available/server.conf
+- sudo sed -i 's/proxy_cache_bypass $st_keyval_update;/proxy_cache_bypass $st_keyval_update;proxy_cache_bypass
+  $http_pragma;/g' /etc/nginx/sites-available/server.conf
+- sudo sed -i 's/listen 80;/listen 127.0.0.1:80 default_server;/g' /etc/nginx/sites-available/server.conf
+- sudo cat /etc/nginx/sites-available/server.conf
+- sudo ln -s /etc/nginx/sites-availalbe/server.conf /etc/nginx/sites-enabled/server.conf
+- sudo nginx -c /etc/nginx/nginx.conf
+- sudo nginx -t
 before_script:
-  - npm install
-
+- npm install
 script:
-  - node server.js &
-  - npm test
+- node server.js &
+- npm test
