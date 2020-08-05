@@ -28,7 +28,7 @@ describe('Nginx key/val client tests', async function() {
 
         // load key/val store
         store = new ngxKeyVal({
-            "server": "http://your-keyvalue-store.local:8080/"
+            "server": "http://127.0.0.1:8080/"
         });
 
         assert.equal(typeof store, 'object');

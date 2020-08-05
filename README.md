@@ -48,9 +48,8 @@ let data = await store.get('key', {
    }
 });
 
-/**
- * in-memory examples
- */
+
+/** in-memory examples **/
 
 // set data with an 1 hour expire time, a custom content-type and a 10 seconds in-memory cache
 await store.put('key', 'data', 60 * 60, {
@@ -74,9 +73,7 @@ let data = await store.get('key', null, function(data) {
 });
 
 
-/**
- * Google Cloud Storage peristence examples
- */
+/** Google Cloud Storage peristence examples **/
 
 // set data with persistent storage in Google Cloud Storage
 await store.put('key', 'data', 60 * 60, false, true);
