@@ -4,11 +4,10 @@ const assert = require('assert'),
     path = require('path'),
     fs = require('fs'),
     md5 = require('md5'),
-    NgxKeyVal = require(path.resolve(__dirname, '../../client.js')),
+    ngxKeyVal = require(path.resolve(__dirname, '../../client.js')),
     microBenchmark = require('micro-benchmark');
 
-let NKV;
-
+let store;
 
 describe('Nginx key/val client tests', async function() {
 
@@ -16,7 +15,11 @@ describe('Nginx key/val client tests', async function() {
     before(function(done) {
 
         // create tmp directory
-        fs.mkdirSync(path.resolve(__dirname, '../tmp/'));
+        try {
+            fs.mkdirSync(path.resolve(__dirname, '../tmp/'));
+        } catch (e) {
+
+        }
 
         done();
     });
@@ -24,24 +27,24 @@ describe('Nginx key/val client tests', async function() {
     it('Initiates key/value client', function(done) {
 
         // load key/val store
-        NKV = new NgxKeyVal({
-            "server": "http://127.0.0.1:8080/"
+        store = new ngxKeyVal({
+            "server": "http://your-keyvalue-store.local:80/"
         });
 
-        assert.equal(typeof NKV, 'object');
+        assert.equal(typeof store, 'object');
         done();
     });
 
     it('Exposes get(), put() and del() methods', function(done) {
-        assert.equal(typeof NKV.get, 'function');
-        assert.equal(typeof NKV.put, 'function');
-        assert.equal(typeof NKV.del, 'function');
+        assert.equal(typeof store.get, 'function');
+        assert.equal(typeof store.put, 'function');
+        assert.equal(typeof store.del, 'function');
         done();
     });
 
     it('Get non-existing key', function(done) {
 
-        NKV.get('xxx').then(function(result) {
+        store.get('xxx').then(function(result) {
 
             assert.equal(result, null);
             done();
@@ -50,10 +53,10 @@ describe('Nginx key/val client tests', async function() {
 
     it('Set key with 2 second TTL', function(done) {
 
-        NKV.put('xxx', 'test data', 2).then(function() {
-            NKV.get('xxx').then(function(result) {
+        store.put('xxx', 'test data', 2).then(function() {
+            store.get('xxx').then(function(result) {
 
-                assert.equal((typeof result === 'object' && result.value === 'test data'), true);
+                assert.equal((typeof result === 'object' && result !== null && result.value === 'test data'), true);
                 done();
             });
         });
@@ -64,7 +67,7 @@ describe('Nginx key/val client tests', async function() {
         this.timeout(5000);
 
         setTimeout(function() {
-            NKV.get('xxx').then(function(result) {
+            store.get('xxx').then(function(result) {
 
                 assert.equal(result, null);
                 done();
@@ -79,14 +82,14 @@ describe('Nginx key/val client tests', async function() {
 
         this.timeout(5000);
 
-        NKV.put('xxx', 'test data', 10).then(function() {
-            NKV.get('xxx').then(function(result) {
+        store.put('xxx', 'test data', 10).then(function() {
+            store.get('xxx').then(function(result) {
 
-                assert.equal((typeof result === 'object' && result.value === 'test data'), true);
+                assert.equal((typeof result === 'object' && result !== null && result.value === 'test data'), true);
 
-                NKV.del('xxx').then(function(result) {
+                store.del('xxx').then(function(result) {
 
-                    NKV.get('xxx').then(function(result) {
+                    store.get('xxx').then(function(result) {
 
                         assert.equal(result, null);
                         done();
@@ -100,17 +103,19 @@ describe('Nginx key/val client tests', async function() {
 
         this.timeout(5000);
 
-        NKV.put('xxx', 'test data', 10).then(async function() {
+        console.log("\n");
+
+        store.put('xxx', 'test data', 10).then(async function() {
 
             var result = microBenchmark.suiteAsync({
-                maxOperations: 100, // retrieve 100x
+                maxOperations: 1000,
                 specs: [{
-                    name: 'get-default',
+                    name: 'nginx',
                     fn: function(cb) {
 
-                        NKV.get('xxx').then(function(result) {
+                        store.get('xxx').then(function(result) {
 
-                            assert.equal((typeof result === 'object' && result.value === 'test data'), true);
+                            assert.equal((typeof result === 'object' && result !== null && result.value === 'test data'), true);
                             cb();
                         });
                     }
@@ -121,20 +126,21 @@ describe('Nginx key/val client tests', async function() {
                 var report = microBenchmark.report(result, {
                     chartWidth: 10
                 });
+                console.log(report);
 
-                NKV.del('xxx').then(function(result) {
+                store.del('xxx').then(function(result) {
 
-                    NKV.put('xxx', 'test data', 10, null, 10).then(async function() {
+                    store.put('xxx', 'test data', 10, null, 10).then(async function() {
 
                         var result = microBenchmark.suiteAsync({
-                            maxOperations: 100, // retrieve 100x
+                            maxOperations: 1000,
                             specs: [{
-                                name: 'get-from-cache',
+                                name: 'in-memory',
                                 fn: function(cb) {
 
-                                    NKV.get('xxx', null, true).then(function(result) {
+                                    store.get('xxx', null, true).then(function(result) {
 
-                                        assert.equal((typeof result === 'object' && result.value === 'test data'), true);
+                                        assert.equal((typeof result === 'object' && result !== null && result.value === 'test data'), true);
                                         cb();
                                     });
                                 }
@@ -145,7 +151,9 @@ describe('Nginx key/val client tests', async function() {
                             var report = microBenchmark.report(result, {
                                 chartWidth: 10
                             });
+                            console.log("\n");
                             console.log(report);
+                            console.log("\n");
 
                             // require at least 5000 per second
                             assert.equal(result[0].ops > 5000, true);
@@ -162,12 +170,69 @@ describe('Nginx key/val client tests', async function() {
 
         });
 
+    });
+
+
+    it('Set key with persistent storage in Google Cloud', function(done) {
+
+        this.timeout(10000);
+
+        store.put('xxx', 'test data', 2, null, false, true).then(function() {
+
+            // delete nginx cache data
+            store.del('xxx').then(function(result) {
+
+                // verify deletion from nginx
+                store.get('xxx').then(function(result) {
+
+                    assert.equal(result, null);
+
+                    // wait for Google Cloud data-transfer to complete in background
+                    setTimeout(function() {
+
+                        // get from persistent storage
+                        store.get('xxx', null, false, true).then(function(result) {
+
+                            assert.equal((typeof result === 'object' && result !== null && result.value === 'test data') ? true : result, true);
+                            done();
+                        });
+
+                    }, 5000);
+
+                });
+
+            });
+        });
+    });
+
+    it('Delete key from persistent storage in Google Cloud', function(done) {
+
+        this.timeout(10000);
+
+        // get from persistent storage
+        store.get('xxx', null, false, true).then(function(result) {
+
+            assert.equal((typeof result === 'object' && result !== null && result.value === 'test data') ? true : result, true);
+
+            // delete from persistent storage
+            store.del('xxx', null, false, true).then(function(result) {
+
+                // verify deletion
+                store.get('xxx', null, false, true).then(function(result) {
+
+                    assert.equal(result, null);
+                    done();
+                });
+
+            });
+
+        });
 
     });
 
     after(function(done) {
 
-        NKV.del('xxx');
+        store.del('xxx', null, false, true);
 
         // remove tmp directory
         fs.rmdirSync(path.resolve(__dirname, '../tmp/'));

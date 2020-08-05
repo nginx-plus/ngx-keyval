@@ -7,7 +7,7 @@ const request = require('request');
 const cache = require('memory-cache');
 
 // ngx-keyval class
-class NgxKeyVal {
+class ngxKeyValClient {
     constructor(config) {
 
         // set config
@@ -33,9 +33,11 @@ class NgxKeyVal {
             this.memory = false;
         }
     }
+
+    // set config
     set config(config) {
         let that = this;
-        ['server'].forEach(function(key) {
+        ['server', 'headers', 'memory'].forEach(function(key) {
             if (key in config && config[key]) {
                 if (typeof config[key] !== 'string') {
                     throw new APIError(key + ' not string');
@@ -45,8 +47,22 @@ class NgxKeyVal {
         });
     }
 
+    // add persist header
+    persist_header(headers, persist) {
+        if (persist) {
+            if (typeof persist === 'object') {
+                persist = JSON.stringify(persist);
+            } else {
+                persist = '1';
+            }
+            headers['x-persist'] = persist;
+        }
+
+        return headers;
+    }
+
     // get data
-    get(key, options = {}, memory = false) {
+    get(key, options = {}, memory = false, persist = false) {
         let that = this;
 
         return new Promise(function(resolve, reject) {
@@ -60,7 +76,11 @@ class NgxKeyVal {
                 if (result) {
 
                     // optionally verify result 
-                    if (typeof memory !== 'function' || memory(result)) {
+                    if (typeof memory === 'function') {
+                        result = memory(result);
+                    }
+
+                    if (result) {
                         return resolve(result);
                     }
                 }
@@ -80,8 +100,11 @@ class NgxKeyVal {
 
             // custom miss TTL
             if ("miss-ttl" in options && options['miss-ttl']) {
-                requestOptions.headers['X-Miss-Ttl'] = options['miss-ttl'];
+                requestOptions.headers['x-miss-ttl'] = options['miss-ttl'];
             }
+
+            // add persist header
+            requestOptions.headers = that.persist_header(requestOptions.headers, persist);
 
             request(requestOptions, function(err, response, body) {
 
@@ -115,7 +138,7 @@ class NgxKeyVal {
     }
 
     // put data
-    put(key, value, ttl, options = {}, memory = false) {
+    put(key, value, ttl, options = {}, memory = false, persist = false) {
         let that = this;
 
         return new Promise(function(resolve, reject) {
@@ -151,6 +174,9 @@ class NgxKeyVal {
             if ("headers" in options && typeof options.headers === 'object') {
                 Object.assign(requestOptions.headers, options.headers);
             }
+
+            // add persist header
+            requestOptions.headers = that.persist_header(requestOptions.headers, persist);
 
             // in-memory cache
             if (memory) {
@@ -200,17 +226,19 @@ class NgxKeyVal {
         });
     }
 
-    del(key, options = {}) {
+    del(key, options = {}, memory = true, persist = false) {
         let that = this;
 
         return new Promise(function(resolve, reject) {
 
-            if (Object.getPrototypeOf(options) !== Object.prototype) {
+            if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
                 options = {};
             }
 
             // memory cache
-            cache.del(key);
+            if (memory) {
+                cache.del(key);
+            }
 
             let requestOptions = {
                 url: that.server + key
@@ -224,8 +252,11 @@ class NgxKeyVal {
                 Object.assign(requestOptions.headers, options.headers);
             }
 
+            // add persist header
+            requestOptions.headers = that.persist_header(requestOptions.headers, persist);
+
             // custom miss TTL
-            requestOptions.headers['X-Delete'] = "1";
+            requestOptions.headers['x-delete'] = "1";
 
             request(requestOptions, function(err, response, body) {
 
@@ -251,7 +282,7 @@ class NgxKeyVal {
     }
 }
 
-module.exports = NgxKeyVal;
+module.exports = ngxKeyValClient;
 
 // error handlers
 class APIError extends Error {};
