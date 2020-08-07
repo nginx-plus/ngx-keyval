@@ -148,9 +148,9 @@ upstream ngx-keyval-server {
 
 ---
 
-# Persistent storage via Google Cloud Storage
+# Backup via Google Cloud Storage
 
-Nginx `proxy_cache` has a hard cache size limit and automatically removes least accessed entries when the cache limit is reached. To secure data persistency or as a backup, the solution provides the option to use a [Google Cloud Storage](https://cloud.google.com/storage) bucket.
+Nginx `proxy_cache` has a hard cache size limit and automatically removes least accessed entries when the cache limit is reached. The solution provides the option to use a [Google Cloud Storage](https://cloud.google.com/storage) bucket as backup.
 
 To use the Google Cloud Storage bucket you need to configure `persist` parameter in the Node.js server configuration (see above).
 
@@ -172,19 +172,15 @@ The solution (Nginx key/value server + Node.js client) provides three cache laye
 
 - in-memory cache ([memory-cache](https://github.com/ptarjan/node-cache)) with an independent TTL
 - Nginx key/value server
-- Google Cloud Storage (persistency/backup)
+- Google Cloud Storage backup
 
 Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance.
 
-The idea for the solution arose when MongoDB regularly crashed or caused a heavy load on the server with gigabytes of frequently accessed key/value data while the use of Google Cloud services would introduce a higher latency and costs.
-
-The Nginx key/value server is a reliable and high performance solution that can handle high traffic.
-
 ## Bottleneck
 
-The Node.js management server that is used by the Nginx key/value server should not receive much traffic. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic the Node.js management server can become a bottle neck.
+The Node.js management server is used for non-existent key requests and PUT requests. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic the Node.js management server can become a bottle neck.
 
-If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server will become a bottle neck.
+If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server can become a bottle neck.
 
 To overcome the Node.js bottleneck, it is possible to use a [Google Cloud Function](https://cloud.google.com/functions) or a server pool as Node.js upstream. A Cloud Function can handle any traffic but introduces a latency (for non-existent keys and PUT requests only) and costs.
 
