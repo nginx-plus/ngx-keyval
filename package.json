@@ -8,6 +8,15 @@
         "web": "style.tools"
     },
     "keywords": ["key-value", "keyval", "nginx", "google-cloud-storage"],
+    "homepage": "https://style.tools/",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/style-tools/ngx-keyval.git"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/style-tools/ngx-keyval/issues"
+    },
     "main": "index.js",
     "engines": {
         "node": "~13"
