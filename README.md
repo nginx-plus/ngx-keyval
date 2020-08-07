@@ -2,9 +2,11 @@
 
 # ngx-keyval - Nginx key/value store
 
-A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an extra in-memory cache layer with an independent TTL. The solution provides an option to use [Google Cloud Storage](https://cloud.google.com/storage) to ensure data persistency.
+A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an optional extra in-memory cache layer. The solution provides an option to use [Google Cloud Storage](https://cloud.google.com/storage) as backup.
 
-The Nginx key/value store can be used via Curl or a simple HTTP request. Nginx allows advanced security and authentication that could enable public usage in a web application.
+The Nginx key/value store can be used via a simple HTTP request. Nginx allows advanced security and authentication that could enable public usage in a web application. The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs, e.g. `your-key-value-store.local/filename.json`.
+
+Nginx `proxy_cache` supports gigabytes of data per key and millions of keys with optimal performance. It is possible to access data in keys using a `range` request to return a small part of a gigabyte size key, with high performance (managed by Nginx).
 
 ```bash
 # get data
@@ -36,6 +38,7 @@ await store.put('key', 'data', 60 * 60);
 // delete key
 await store.del('key');
 
+
 /** options example **/
 
 // get data with custom miss-ttl and HTTP headers
@@ -49,7 +52,7 @@ let data = await store.get('key', {
 
 /** in-memory examples **/
 
-// set data with an 1 hour expire time, a custom content-type and a 10 seconds in-memory cache
+// set data with a custom content-type and a 10 seconds in-memory cache
 await store.put('key', 'data', 60 * 60, {
    "content-type": "application/json"
 }, 10);
@@ -71,7 +74,7 @@ let data = await store.get('key', null, function(data) {
 });
 
 
-/** Google Cloud Storage peristence examples **/
+/** Google Cloud Storage backup examples **/
 
 // set data with persistent storage in Google Cloud Storage
 await store.put('key', 'data', 60 * 60, false, true);
@@ -147,7 +150,7 @@ upstream ngx-keyval-server {
 
 # Persistent storage via Google Cloud Storage
 
-Nginx `proxy_cache` has a hard cache size limit and automatically removes least accessed entries when the cache limit is reached. To secure data persistency, the solution provides the option to use a [Google Cloud Storage](https://cloud.google.com/storage) bucket as a fallback.
+Nginx `proxy_cache` has a hard cache size limit and automatically removes least accessed entries when the cache limit is reached. To secure data persistency or as a backup, the solution provides the option to use a [Google Cloud Storage](https://cloud.google.com/storage) bucket.
 
 To use the Google Cloud Storage bucket you need to configure `persist` parameter in the Node.js server configuration (see above).
 
@@ -169,11 +172,11 @@ The solution (Nginx key/value server + Node.js client) provides three cache laye
 
 - in-memory cache ([memory-cache](https://github.com/ptarjan/node-cache)) with an independent TTL
 - Nginx key/value server
-- Google Cloud Storage (persistency)
+- Google Cloud Storage (persistency/backup)
 
 Nginx TTL management is fast and efficient and the server supports gigabytes of data with optimal performance.
 
-The idea for the solution arose when MongoDB regularly crashed or caused a heavy load on the server with gigabytes of frequently accessed key/value data while the use of Google Cloud services would introduce a higher latency and significant costs.
+The idea for the solution arose when MongoDB regularly crashed or caused a heavy load on the server with gigabytes of frequently accessed key/value data while the use of Google Cloud services would introduce a higher latency and costs.
 
 The Nginx key/value server is a reliable and high performance solution that can handle high traffic.
 
@@ -182,3 +185,19 @@ The Nginx key/value server is a reliable and high performance solution that can 
 The Node.js management server that is used by the Nginx key/value server should not receive much traffic. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic the Node.js management server can become a bottle neck.
 
 If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server will become a bottle neck.
+
+To overcome the Node.js bottleneck, it is possible to use a [Google Cloud Function](https://cloud.google.com/functions) or a server pool as Node.js upstream. A Cloud Function can handle any traffic but introduces a latency (for non-existent keys and PUT requests only) and costs.
+
+```nginx
+# key/val management server
+upstream ngx-keyval-server {
+  server us-central1-ngx-keyval-12345.cloudfunctions.net:443;
+
+  # server pool
+  # server server-2;
+  # server server-3;
+  # server server-4;
+}
+```
+
+The functionality of the Node.js management server is very simple. It will merely return the data that is sent by Nginx and modify the cache headers. It is therefor easy to scale the server.
