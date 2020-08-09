@@ -175,18 +175,20 @@ describe('Nginx key/val client tests', async function() {
     it('Set key with gzip compression', function(done) {
 
         this.timeout(5000);
+        store.del('xxx').then(function(result) {
 
-        store.put('xxx', 'test data'.repeat(100), 10, {
-            gzip: true
-        }).then(function() {
+            store.put('xxx', 'test data'.repeat(100), 10, {
+                gzip: true
+            }).then(function() {
 
-            store.get('xxx', {
-                gzip: 'raw'
-            }).then(function(result) {
+                store.get('xxx', {
+                    gzip: 'raw'
+                }).then(function(result) {
 
-                assert.equal((typeof result === 'object' && result !== null && result.gzip) ? true : result, true);
+                    assert.equal((typeof result === 'object' && result !== null && result.gzip) ? true : result, true);
 
-                done();
+                    done();
+                });
             });
         });
     });
