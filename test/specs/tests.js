@@ -182,6 +182,11 @@ describe('Nginx key/val client tests', async function() {
             }).then(function() {
 
                 store.get('xxx', {
+                    gzip: true
+                }).then(function(result) {
+
+                });
+                store.get('xxx', {
                     gzip: 'raw'
                 }).then(function(result) {
 

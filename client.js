@@ -216,7 +216,7 @@ class ngxKeyValClient {
                     }
 
                     if (gzip) {
-                        console.log(response);
+                        console.log(response.headers);
                     }
 
                     // mark raw gzip result
