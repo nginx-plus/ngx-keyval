@@ -8,7 +8,7 @@ The Nginx key/value store can be used via a simple HTTP request. Nginx allows ad
 
 The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs with meta-data stored in headers, e.g. `your-key-value-store.local/filename.json` with header `X-Metadata`. A `HEAD` request would enable to query just the meta-data of a key.
 
-The data can be compressed using gzip with the ability to let Nginx handle decompression.
+The data can be compressed using gzip with the ability to let Nginx handle decompression. Alternatively, the `accept-encoding` request header enables to handle decompression in the client.
 
 Nginx `proxy_cache` supports gigabytes of data per key and millions of keys with optimal performance. It is possible to access data in keys using a [byte-range](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/#slice) request to return a small part of a gigabyte size key, with high performance (managed by Nginx).
 
