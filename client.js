@@ -215,10 +215,6 @@ class ngxKeyValClient {
                         cache.put(key, result, memory.ttl);
                     }
 
-                    if (gzip) {
-                        console.log(response.headers);
-                    }
-
                     // mark raw gzip result
                     if (gzip === 'raw' && response.headers['content-encoding'] && response.headers['content-encoding'] === 'gzip') {
                         result.gzip = true;

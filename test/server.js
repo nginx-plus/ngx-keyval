@@ -9,7 +9,7 @@ const server = new ngxKeyVal.server({
     "verbose": true,
     "default_ttl": false,
     "miss_ttl": 1,
-    "default_content_type": "plain/text",
+    "default_content_type": "text/plain",
     "persist": {
         "type": "@google-cloud/storage",
         "auth": {
