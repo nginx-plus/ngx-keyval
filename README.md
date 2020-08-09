@@ -192,9 +192,7 @@ Nginx TTL management is fast and efficient and the server supports gigabytes of 
 
 ## Bottleneck
 
-The Node.js management server is used for non-existent key requests and PUT requests. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic the Node.js management server can become a bottle neck.
-
-If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server can become a bottleneck.
+The Node.js management server is used for non-existent key requests and PUT requests. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic or when the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server can become a bottle neck.
 
 To overcome the Node.js bottleneck, it is possible to use a [Google Cloud Function](https://cloud.google.com/functions) or a server pool as Node.js upstream. A Cloud Function can handle any traffic but introduces a latency (for non-existent keys and PUT requests only) and costs.
 
