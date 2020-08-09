@@ -38,6 +38,7 @@ min/*
 .rpt2_cache
 tmp
 tmp/*
+test.js
 dist/$weak$.js
 update.txt
 update-wp.txt

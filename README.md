@@ -4,16 +4,23 @@
 
 A simple high performance and scalable key/value store with TTL based on Nginx `proxy_cache` with a Node.js client that ads an optional extra in-memory cache layer. The solution provides an option to use [Google Cloud Storage](https://cloud.google.com/storage) as backup.
 
-The Nginx key/value store can be used via a simple HTTP request. Nginx allows advanced security and authentication that could enable public usage in a web application. The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs, e.g. `your-key-value-store.local/filename.json`.
+The Nginx key/value store can be used via a simple HTTP request. Nginx allows advanced security and authentication that could enable public usage in a web application. 
 
-Nginx `proxy_cache` supports gigabytes of data per key and millions of keys with optimal performance. It is possible to access data in keys using a `range` request to return a small part of a gigabyte size key, with high performance (managed by Nginx).
+The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs with meta-data stored in headers, e.g. `your-key-value-store.local/filename.json` with header `X-Metadata`. A `HEAD` request would enable to query just the meta-data of a key.
+
+The data can be compressed using gzip with the ability to let Nginx handle decompression.
+
+Nginx `proxy_cache` supports gigabytes of data per key and millions of keys with optimal performance. It is possible to access data in keys using a [byte-range](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/#slice) request to return a small part of a gigabyte size key, with high performance (managed by Nginx).
 
 ```bash
 # get data
 curl -D - http://your-keyvalue-store.local/key
 
-# set data with a 1 hour TTL
-curl -D - -H "Content-Type: application/json" -X POST -d '{"value": "data", "ttl": 3600}' http://your-keyvalue-store.local/key
+# store data with a 1 hour TTL, gzip compression and a custom content-type
+curl -D - \
+  -H "Content-Type: application/json" \
+  -H "X-gzip: 1" \
+  -X POST -d '{"value": "data", "ttl": 3600, "content-type": "text/html", "headers": { "X-Meta": "meta-data" } }' http://your-keyvalue-store.local/key
 
 # delete key
 curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
@@ -26,7 +33,8 @@ const ngxKeyVal = require('@style.tools/ngx-keyval');
 
 // initiate key/value store
 const store = new ngxKeyVal.client({
-    "server": "http://your-keyvalue-store.local/"
+    "server": "http://your-keyvalue-store.local/",
+    "gzip": true // compress data by default
 });
 
 // get data
@@ -46,7 +54,8 @@ let data = await store.get('key', {
    "miss-ttl": 3600, // cache non-existent key requests in Nginx for 1 hour
    "headers": {
       "X-Authenticate-Me": "secret"
-   }
+   },
+   "gzip": "raw" // return raw (uncompressed) gzip data
 });
 
 
@@ -54,7 +63,12 @@ let data = await store.get('key', {
 
 // set data with a custom content-type and a 10 seconds in-memory cache
 await store.put('key', 'data', 60 * 60, {
-   "content-type": "application/json"
+   "content-type": "application/json",
+   "gzip": true, // store data with gzip compression
+   "content-type": "text/html",
+   "headers": {
+      "X-Meta": "meta-data"
+   }
 }, 10);
 
 // get data from memory (memory is not used by default)
@@ -180,7 +194,7 @@ Nginx TTL management is fast and efficient and the server supports gigabytes of 
 
 The Node.js management server is used for non-existent key requests and PUT requests. It is possible to define a TTL for non existent (404) keys, both on request level (`x-miss-ttl` header) and on server level, so that Nginx will handle the load of any GET request related traffic. For PUT request related traffic the Node.js management server can become a bottle neck.
 
-If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server can become a bottle neck.
+If the key/value server is to receive lots of traffic for non-existent keys with unique names, then the Node.js management server can become a bottleneck.
 
 To overcome the Node.js bottleneck, it is possible to use a [Google Cloud Function](https://cloud.google.com/functions) or a server pool as Node.js upstream. A Cloud Function can handle any traffic but introduces a latency (for non-existent keys and PUT requests only) and costs.
 

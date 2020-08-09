@@ -37,7 +37,7 @@ class ngxKeyValServer {
                         that[localkey] = false;
                         break;
                     case "default_content_type":
-                        that[localkey] = 'plain/text';
+                        that[localkey] = 'text/plain';
                         break;
                 }
 
@@ -345,9 +345,19 @@ class ngxKeyValServer {
         }
 
         // content type
-        content_type = this.default_content_type || 'plain/text';
+        content_type = this.default_content_type || 'text/plain';
         if ("content-type" in data && typeof data['content-type'] === 'string' && data['content-type']) {
             content_type = data['content-type'];
+        }
+
+        // custom headers / meta data
+        if ("headers" in data && typeof data['headers'] === 'object') {
+            for (let [key, value] of Object.entries(data.headers)) {
+                if (typeof value !== 'string') {
+                    value = JSON.stringify(value);
+                }
+                res.setHeader(key, value);
+            }
         }
 
         // verbose

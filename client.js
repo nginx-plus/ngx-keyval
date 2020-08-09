@@ -29,15 +29,31 @@ class ngxKeyValClient {
             throw new APIError('invalid default request headers');
         }
 
-        if (typeof this.memory !== 'object') {
+        // in-memory cache
+        if (typeof this.memory !== 'undefined') {
+            if (!isNaN(this.memory)) {
+                this.memory = {
+                    "ttl": this.memory
+                };
+            } else if (typeof this.memory !== 'object') {
+                this.memory = {
+                    "enabled": 1
+                };
+            }
+        }
+        if (!this.memory) {
             this.memory = false;
+        }
+
+        if (!this.gzip) {
+            this.gzip = false;
         }
     }
 
     // set config
     set config(config) {
-        let that = this;
-        ['server', 'headers', 'memory'].forEach(function(key) {
+        const that = this;
+        ['server', 'headers', 'memory', 'gzip'].forEach(function(key) {
             if (key in config && config[key]) {
                 if (typeof config[key] !== 'string') {
                     throw new APIError(key + ' not string');
@@ -66,50 +82,106 @@ class ngxKeyValClient {
         return headers;
     }
 
-    // get data
-    get(key, options = {}, memory = false, persist = false) {
-        let that = this;
+    // parse in-memory cache config
+    memory_cache(memory) {
 
-        return new Promise(function(resolve, reject) {
-            if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
-                options = {};
+        let ttl;
+
+        // in-memory cache
+        if (memory || this.memory) {
+            if (typeof memory === 'function') {
+                memory = {
+                    "verify": memory
+                };
+            }
+            if (typeof memory !== 'object') {
+                memory = {
+                    "enabled": 1
+                };
+            }
+            if (this.memory) {
+                memory = Object.assign(this.memory, memory);
+            }
+        }
+
+        // in-memory cache
+        if (memory) {
+            if (typeof memory === 'object') {
+                if ("ttl" in memory) {
+                    ttl = memory.ttl;
+                }
+            } else if (!isNaN(memory) && parseInt(memory) > 0) {
+                ttl = memory;
             }
 
-            // try in-memory cache
-            if (memory) {
-                let result = cache.get(key);
+            memory.ttl = ttl;
+
+            return memory;
+        }
+
+        return false;
+    }
+
+    // get data
+    async get(key, options = {}, memory = false, persist = false) {
+        const that = this;
+
+        if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
+            options = {};
+        }
+
+        // in-memory cache
+        memory = this.memory_cache(memory);
+        if (memory) {
+            let result = cache.get(key);
+            if (result) {
+
+                // verify result
+                if (typeof memory.verify === 'function') {
+                    result = memory.verify(result);
+                }
+
                 if (result) {
-
-                    // optionally verify result 
-                    if (typeof memory === 'function') {
-                        result = memory(result);
-                    }
-
-                    if (result) {
-                        return resolve(result);
-                    }
+                    return result;
                 }
             }
+        }
 
-            let requestOptions = {
-                url: that.server + key
-            };
+        let requestOptions = {
+            url: that.server + key
+        };
 
-            requestOptions.headers = {};
-            if (that.headers) {
-                Object.assign(requestOptions.headers, that.headers);
+        requestOptions.headers = {};
+        if (that.headers) {
+            Object.assign(requestOptions.headers, that.headers);
+        }
+        if ("headers" in options && typeof options.headers === 'object') {
+            Object.assign(requestOptions.headers, options.headers);
+        }
+
+        // custom miss TTL
+        if ("miss-ttl" in options && options['miss-ttl']) {
+            requestOptions.headers['x-miss-ttl'] = options['miss-ttl'];
+        }
+
+        // gzip compression
+        const gzip = ("gzip" in options) ? options.gzip : this.gzip;
+        if (gzip) {
+
+            // return gzip data
+            if (gzip === 'raw') {
+                requestOptions.headers['accept-encoding'] = 'gzip';
+            } else {
+
+                // decompress in node.js
+                requestOptions.headers['gzip'] = true;
             }
-            if ("headers" in options && typeof options.headers === 'object') {
-                Object.assign(requestOptions.headers, options.headers);
-            }
+        }
 
-            // custom miss TTL
-            if ("miss-ttl" in options && options['miss-ttl']) {
-                requestOptions.headers['x-miss-ttl'] = options['miss-ttl'];
-            }
+        // add persist header
+        requestOptions.headers = that.persist_header(requestOptions.headers, persist);
 
-            // add persist header
-            requestOptions.headers = that.persist_header(requestOptions.headers, persist);
+        return await new Promise(function(resolve, reject) {
 
             request(requestOptions, function(err, response, body) {
 
@@ -132,10 +204,23 @@ class ngxKeyValClient {
                     throw new APIError(body);
                 } else {
 
-                    resolve({
+                    let result = {
                         "value": body,
-                        "content-type": response.headers['content-type']
-                    })
+                        "content-type": response.headers['content-type'],
+                        "date": response.headers['date']
+                    };
+
+                    // in-memory cache
+                    if (memory) {
+                        cache.put(key, result, memory.ttl);
+                    }
+
+                    // mark raw gzip result
+                    if (gzip === 'raw' && response.headers['content-encoding'] && response.headers['content-encoding'] === 'gzip') {
+                        result.gzip = true;
+                    }
+
+                    resolve(result);
                 }
 
             });
@@ -143,10 +228,10 @@ class ngxKeyValClient {
     }
 
     // put data
-    put(key, value, ttl, options = {}, memory = false, persist = false) {
-        let that = this;
+    async put(key, value, ttl, options = {}, memory = false, persist = false) {
+        const that = this;
 
-        return new Promise(function(resolve, reject) {
+        return await new Promise(function(resolve, reject) {
 
             if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
                 options = {};
@@ -180,32 +265,27 @@ class ngxKeyValClient {
                 Object.assign(requestOptions.headers, options.headers);
             }
 
+            // gzip compression
+            const gzip = ("gzip" in options) ? options.gzip : that.gzip;
+            if (gzip) {
+
+                requestOptions.headers['x-gzip'] = '1';
+
+                // return raw gzip data (prevent gunzip decompression)
+                requestOptions.headers['accept-encoding'] = 'gzip';
+            }
+
             // add persist header
             requestOptions.headers = that.persist_header(requestOptions.headers, persist);
 
             // in-memory cache
+            memory = that.memory_cache(memory);
             if (memory) {
-                let mem_ttl;
-
-                if (typeof that.memory === 'object') {
-                    if ("ttl" in that.memory) {
-                        mem_ttl = that.memory.ttl;
-                    }
-                } else if (!isNaN(that.memory) && parseInt(that.memory) > 0) {
-                    mem_ttl = that.memory;
-                }
-                if (typeof memory === 'object') {
-                    if ("ttl" in memory) {
-                        mem_ttl = memory.ttl;
-                    }
-                } else if (!isNaN(memory) && parseInt(memory) > 0) {
-                    mem_ttl = memory;
-                }
-
                 cache.put(key, {
                     "value": value,
-                    "content-type": body['content-type'] || 'text/plain'
-                }, mem_ttl || undefined);
+                    "content-type": body['content-type'] || 'text/plain',
+                    "date": new Date().toGMTString()
+                }, memory.ttl);
             }
 
             request(requestOptions, function(err, response, body) {
@@ -231,16 +311,18 @@ class ngxKeyValClient {
         });
     }
 
-    del(key, options = {}, memory = true, persist = false) {
-        let that = this;
+    // delete key
+    async del(key, options = {}, memory = true, persist = false) {
+        const that = this;
 
-        return new Promise(function(resolve, reject) {
+        return await new Promise(function(resolve, reject) {
 
             if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
                 options = {};
             }
 
-            // memory cache
+            // in-memory cache
+            memory = that.memory_cache(memory);
             if (memory) {
                 cache.del(key);
             }
