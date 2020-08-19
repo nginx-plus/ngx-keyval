@@ -142,7 +142,7 @@ const server = new ngxKeyVal.server({
     "verbose": true,
     "default_ttl": false,
     "miss_ttl": 1,
-    "max_size": "50mb",
+    "max_size": "50mb", // max size accepted by Node.js server (post limit)
     "default_content_type": "plain/text",
     "persist": {
         "type": "@google-cloud/storage",
