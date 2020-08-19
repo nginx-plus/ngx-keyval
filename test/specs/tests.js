@@ -198,6 +198,37 @@ describe('Nginx key/val client tests', async function() {
         });
     });
 
+    it('Set and retrieve key with meta data', function(done) {
+
+        this.timeout(5000);
+
+        store.del('xxx').then(function(result) {
+
+            store.put('xxx', 'test data'.repeat(100), 10, {
+                "content-type": "custom/mime",
+                headers: {
+                    "x-metadata": "test 123",
+                    "data-x": "test data"
+                }
+            }).then(function() {
+
+                store.meta('xxx', [
+                    'x-metadata',
+                    'data-x',
+                    'date',
+                    'content-type'
+                ]).then(function(result) {
+
+                    assert.equal((typeof result === 'object' && result !== null && result['x-metadata'] && result['x-metadata'] === 'test 123' && result['data-x'] === 'test data' && result['date'] && result['content-type'].indexOf('custom/mime') !== -1) ? true : result, true);
+
+                    done();
+
+                });
+
+            });
+        });
+    });
+
     it('Set key with persistent storage in Google Cloud', function(done) {
 
         this.timeout(10000);

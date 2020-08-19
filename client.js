@@ -55,9 +55,6 @@ class ngxKeyValClient {
         const that = this;
         ['server', 'headers', 'memory', 'gzip'].forEach(function(key) {
             if (key in config && config[key]) {
-                if (typeof config[key] !== 'string') {
-                    throw new APIError(key + ' not string');
-                }
                 that[key] = config[key];
             }
         });
@@ -130,6 +127,11 @@ class ngxKeyValClient {
             options = {};
         }
 
+        // return date by default
+        if (!("meta" in options)) {
+            options.meta = ['date'];
+        }
+
         // in-memory cache
         memory = this.memory_cache(memory);
         if (memory) {
@@ -200,24 +202,118 @@ class ngxKeyValClient {
                     // not found (404) or just deleted (204)
                     resolve(null);
                 } else if (response.statusCode !== 200) {
-                    console.log(response.statusCode, body);
                     throw new APIError(body);
                 } else {
 
                     let result = {
-                        "value": body,
-                        "content-type": response.headers['content-type'],
-                        "date": response.headers['date']
+                        "value": body
                     };
+
+                    // return meta
+                    if (options.meta && options.meta instanceof Array) {
+                        for (let [index, value] of options.meta.entries()) {
+                            let metaKey = value.toLowerCase();
+                            result[value] = (metaKey in response.headers) ? response.headers[metaKey] : null;
+                        }
+                    }
+
+                    // mark raw gzip result
+                    if (gzip === 'raw' && response.headers['content-encoding'] && response.headers['content-encoding'] === 'gzip') {
+                        result.gzip = true;
+                    }
 
                     // in-memory cache
                     if (memory) {
                         cache.put(key, result, memory.ttl);
                     }
 
-                    // mark raw gzip result
-                    if (gzip === 'raw' && response.headers['content-encoding'] && response.headers['content-encoding'] === 'gzip') {
-                        result.gzip = true;
+                    resolve(result);
+                }
+
+            });
+        });
+    }
+
+    // get meta
+    async meta(key, meta, options = {}, memory = false, persist = false) {
+        const that = this;
+
+        if (!options || Object.getPrototypeOf(options) !== Object.prototype) {
+            options = {};
+        }
+
+        // in-memory cache
+        memory = this.memory_cache(memory);
+        if (memory) {
+            let result = cache.get('meta:' + key);
+            if (result) {
+
+                // verify result
+                if (typeof memory.verify === 'function') {
+                    result = memory.verify(result);
+                }
+
+                if (result) {
+                    return result;
+                }
+            }
+        }
+
+        let requestOptions = {
+            url: that.server + key
+        };
+
+        requestOptions.headers = {};
+        if (that.headers) {
+            Object.assign(requestOptions.headers, that.headers);
+        }
+        if ("headers" in options && typeof options.headers === 'object') {
+            Object.assign(requestOptions.headers, options.headers);
+        }
+
+        // custom miss TTL
+        if ("miss-ttl" in options && options['miss-ttl']) {
+            requestOptions.headers['x-miss-ttl'] = options['miss-ttl'];
+        }
+
+        // add persist header
+        requestOptions.headers = that.persist_header(requestOptions.headers, persist);
+
+        return await new Promise(function(resolve, reject) {
+
+            request.head(requestOptions, function(err, response, body) {
+
+                if (err) {
+                    throw new InternalServerError(err);
+                } else if (response.statusCode === 400) {
+                    throw new BadRequest(body);
+                } else if (response.statusCode === 403) {
+                    throw new Unauthorized(body);
+                } else if (response.statusCode === 429) {
+                    throw new RateLimitException(body);
+                } else if (response.statusCode === 500 || response.statusCode === 504) {
+                    throw new InternalServerError(body);
+                } else if (response.statusCode === 404 || response.statusCode === 204) {
+
+                    // not found (404) or just deleted (204)
+                    resolve(null);
+                } else if (response.statusCode !== 200) {
+                    throw new APIError(body);
+                } else {
+
+                    let result = {};
+
+                    // return meta
+                    if (meta instanceof Array) {
+                        for (let [index, value] of meta.entries()) {
+                            let metaKey = value.toLowerCase();
+                            result[value] = (metaKey in response.headers) ? response.headers[metaKey] : null;
+                        }
+                    }
+
+                    // in-memory cache
+                    if (memory) {
+                        cache.put('meta:' + key, result, memory.ttl);
                     }
 
                     resolve(result);

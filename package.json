@@ -1,6 +1,6 @@
 {
     "name": "@style.tools/ngx-keyval",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "description": "Nginx proxy_cache based key/value store with TTL.",
     "author": {
         "name": "info@style.tools",
