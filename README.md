@@ -12,6 +12,7 @@ The data can be compressed using gzip with the ability to let Nginx handle decom
 
 Nginx `proxy_cache` supports gigabytes of data per key and millions of keys with optimal performance. It is possible to access data in keys using a [byte-range](https://docs.nginx.com/nginx/admin-guide/content-cache/content-caching/#slice) request to return a small part of a gigabyte size key, with high performance (managed by Nginx).
 
+
 ```bash
 # get data
 curl -D - http://your-keyvalue-store.local/key
@@ -26,7 +27,7 @@ curl -D - \
 curl -D - -H "X-DELETE:1" http://your-keyvalue-store.local/key
 ```
 
-The Node.js client provides an easy API.
+A Node.js client provides an easy API.
 
 ```javascript
 const ngxKeyVal = require('@style.tools/ngx-keyval');
@@ -46,6 +47,21 @@ await store.put('key', 'data', 60 * 60);
 // delete key
 await store.del('key');
 
+// set meta data
+await store.put('key', 'data', 60 * 60, {
+  headers: {
+    "x-metadata": "data 123",
+    "data-x": "other-data"
+  }
+});
+
+// get meta data
+await store.meta('key', [
+  'x-metadata',
+  'data-x',
+  'date',
+  'content-type'
+]);
 
 /** options example **/
 
@@ -182,7 +198,7 @@ When set to `header`, it is required to set the `x-persist:1` header in the GET 
 
 # Description
 
-The solution (Nginx key/value server + Node.js client) provides three cache layers for optimal performance and reliability.
+The Nginx key/value server + Node.js client provides three cache layers for optimal performance and reliability.
 
 - in-memory cache ([memory-cache](https://github.com/ptarjan/node-cache)) with an independent TTL
 - Nginx key/value server
