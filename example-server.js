@@ -9,6 +9,7 @@ const server = new ngxKeyVal.server({
     "verbose": false,
     "default_ttl": false,
     "miss_ttl": 1,
+    "max_size": "50mb",
     "default_content_type": "text/plain",
     "persist": {
         "type": "@google-cloud/storage",

@@ -6,7 +6,7 @@ A simple high performance and scalable key/value store with TTL based on Nginx `
 
 The Nginx key/value store can be used via a simple HTTP request. Nginx allows advanced security and authentication that could enable public usage in a web application. 
 
-The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs with meta-data stored in headers, e.g. `your-key-value-store.local/filename.json` with header `X-Metadata`. A `HEAD` request would enable to query just the meta-data of a key.
+The store enables to set HTTP headers and a `content-type` so that keys can be accessed as regular file URLs with meta-data stored in headers, e.g. `your-key-value-store.local/filename.json` with header `X-Metadata`. A `HEAD` request enables to query just the meta-data of a key.
 
 The data can be compressed using gzip with the ability to let Nginx handle decompression. Alternatively, the `accept-encoding` request header enables to handle decompression in the client.
 
@@ -142,6 +142,7 @@ const server = new ngxKeyVal.server({
     "verbose": true,
     "default_ttl": false,
     "miss_ttl": 1,
+    "max_size": "50mb",
     "default_content_type": "plain/text",
     "persist": {
         "type": "@google-cloud/storage",

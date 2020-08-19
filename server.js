@@ -17,7 +17,7 @@ class ngxKeyValServer {
     set config(config) {
 
         let that = this;
-        ['port', 'default_content_type', 'miss_ttl', 'default_ttl', 'persist', 'verbose'].forEach(function(key) {
+        ['port', 'default_content_type', 'miss_ttl', 'default_ttl', 'persist', 'verbose', 'max_size'].forEach(function(key) {
 
             // prefix key
             let localkey = key;
@@ -29,6 +29,9 @@ class ngxKeyValServer {
                 that[localkey] = config[key];
             } else {
                 switch (key) {
+                    case "max_size":
+                        that[localkey] = '50mb';
+                        break;
                     case "miss_ttl":
                     case "default_ttl":
                         that[localkey] = 0;
@@ -72,7 +75,8 @@ class ngxKeyValServer {
         app.disable('x-powered-by');
         app.disable('etag');
         app.use(express.json({
-            type: '*/*'
+            type: '*/*',
+            limit: this.max_size
         }));
 
         // key/value request
